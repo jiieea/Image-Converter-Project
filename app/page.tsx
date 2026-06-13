@@ -1,65 +1,133 @@
-import Image from "next/image";
+"use client"
+import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
+import { convertImage } from "@/lib/api";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
+
+const FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    const [file, setFile] = React.useState<File | null>(null);
+    const [format, setFormat] = React.useState("png");
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState("");
+    const [isDragging, setIsDragging] = React.useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
+
+    const handleDrop = (event: React.DragEvent) => {
+        event.preventDefault();
+        setIsDragging(false);
+        const dropped = event.dataTransfer.files[0];
+        if (dropped) setFile(dropped);
+    }
+
+    const handleConvert = async () => {
+        if (!file) return;
+        setError('')
+        setLoading(true);
+
+        try {
+            const fileUrl = await convertImage(file, format); // return url
+            sessionStorage.setItem('convertedUrl', fileUrl);
+            sessionStorage.setItem('convertedFormat', format);
+            sessionStorage.setItem('originalName', file.name);
+            router.push('/result');
+        } catch (error: any) {
+            console.error(error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <div className="min-h-screen bg-background">
+            <nav className="border-b border-zinc-100 px-6 py-4 flex items-center justify-between">
+                <span className="font-medium text-lg font-sans text-primary">imgconvert</span>
+                <div className="flex gap-6 text-sm text-primary">
+                    <Link href="/" className="hover:text-secondary transition-colors">Home</Link>
+                    <Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
+                </div>
+            </nav>
+            <div className="max-w-lg mx-auto py-16 px-6">
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl font-medium text-zinc-900 mb-2">
+                        Convert images instantly
+                    </h1>
+                    <p className="text-zinc-500 text-sm">
+                        Free, no login required. JPG, PNG, WebP and PDF supported.
+                    </p>
+                </div>
+                <div
+                    onDrop={handleDrop}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true)
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onClick={() => inputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-6
+                    ${isDragging
+                            ? 'border-zinc-400 bg-zinc-50'
+                            : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+                        }`}
+                >
+                    <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        ref={inputRef}
+                        onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                    <p className="text-3xl mb-3">↑</p>
+                    {file ? (
+                        <>
+                            <p className="font-medium text-zinc-900 text-sm">{file.name}</p>
+                            <p className="text-xs text-zinc-400 mt-1">
+                                {(file.size / 1024 / 1024).toFixed(2)} MB · click to change
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="font-medium text-zinc-900 text-sm">
+                                Drop your image here
+                            </p>
+                            <p className="text-xs text-zinc-400 mt-1">
+                                or click to browse — up to 50MB
+                            </p>
+                        </>
+                    )}
+                </div>
+                {/* Format selector */}
+                <p className="text-sm text-zinc-500 mb-3">Convert to</p>
+                <div className="flex gap-2 mb-6">
+                    {FORMATS.map((f) => (
+                        <Button
+                            key={f}
+                            onClick={() => setFormat(f)}
+                            className={`px-4 py-2 rounded-lg text-sm border transition-colors
+                ${format === f
+                                    ? 'border-popover bg-blue-50 text-blue-800'
+                                    : 'border-zinc-200 text-secondary hover:border-accent-foreground '
+                                }`}
+                        >
+                            {f.toUpperCase()}
+                        </Button>
+                    ))}
+                </div>
+
+                {error && (
+                    <p className="text-sm text-red-500 mb-4">{error}</p>
+                )}
+                <Button
+                    className="w-full rounded-lg my-2"
+                    disabled={!file || loading}
+                    onClick={handleConvert}
+                >
+                    {loading ? 'Converting...' : 'Convert image'}
+                </Button>
+            </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    );
 }
