@@ -3,15 +3,15 @@ export const convertImage = async (file: File, format: string): Promise<string> 
     formData.append('file', file);
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/convert?file=${format}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/convert?format=${format}`, {
             method: 'POST',
             body: formData,
         });
-        const data = await response.json();
         if (!response.ok) {
-            throw new Error(`Conversion failed: ${data.message}`);
+            const error = await response.json();
+            throw new Error(`Conversion failed: ${error.message}`);
         }
-
+        const data = await response.json();
         return data.url; // download link
     } catch (err) {
         throw err;

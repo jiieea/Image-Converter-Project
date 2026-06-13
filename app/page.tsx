@@ -1,9 +1,9 @@
 "use client"
-import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
-import { convertImage } from "@/lib/api";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import React, {useRef} from "react";
+import {useRouter} from "next/navigation";
+import {convertImage} from "@/lib/api";
+import {Button} from "@/components/ui/button";
+import Navbar from "@/components/ui/navbar";
 
 
 const FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
@@ -21,6 +21,11 @@ export default function Home() {
         setIsDragging(false);
         const dropped = event.dataTransfer.files[0];
         if (dropped) setFile(dropped);
+    }
+
+    const getFormat = (format: string) => {
+        setFormat(format);
+        console.log(format);
     }
 
     const handleConvert = async () => {
@@ -44,13 +49,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-background">
-            <nav className="border-b border-zinc-100 px-6 py-4 flex items-center justify-between">
-                <span className="font-medium text-lg font-sans text-primary">imgconvert</span>
-                <div className="flex gap-6 text-sm text-primary">
-                    <Link href="/" className="hover:text-secondary transition-colors">Home</Link>
-                    <Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
-                </div>
-            </nav>
+            <Navbar/>
             <div className="max-w-lg mx-auto py-16 px-6">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-medium text-zinc-900 mb-2">
@@ -70,16 +69,16 @@ export default function Home() {
                     onClick={() => inputRef.current?.click()}
                     className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-6
                     ${isDragging
-                            ? 'border-zinc-400 bg-zinc-50'
-                            : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
-                        }`}
+                        ? 'border-zinc-400 bg-zinc-50'
+                        : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+                    }`}
                 >
                     <input
                         type="file"
                         className="hidden"
                         accept="image/*"
                         ref={inputRef}
-                        onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}/>
                     <p className="text-3xl mb-3">↑</p>
                     {file ? (
                         <>
@@ -105,12 +104,12 @@ export default function Home() {
                     {FORMATS.map((f) => (
                         <Button
                             key={f}
-                            onClick={() => setFormat(f)}
+                            onClick={() => getFormat(f)}
                             className={`px-4 py-2 rounded-lg text-sm border transition-colors
                 ${format === f
-                                    ? 'border-popover bg-blue-50 text-blue-800'
-                                    : 'border-zinc-200 text-secondary hover:border-accent-foreground '
-                                }`}
+                                ? 'border-popover bg-blue-50 text-blue-800'
+                                : 'border-zinc-200 text-secondary hover:border-accent-foreground '
+                            }`}
                         >
                             {f.toUpperCase()}
                         </Button>
