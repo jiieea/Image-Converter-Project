@@ -4,6 +4,7 @@ import {useRouter} from "next/navigation";
 import {convertImage} from "@/lib/api";
 import {Button} from "@/components/ui/button";
 import Navbar from "@/components/ui/navbar";
+import {toast} from "sonner";
 
 
 const FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
@@ -39,6 +40,7 @@ export default function Home() {
             sessionStorage.setItem('convertedFormat', format);
             sessionStorage.setItem('originalName', file.name);
             router.push('/result');
+            toast.success('Successfully converted!');
         } catch (error: any) {
             console.error(error);
             setError(error.message);

@@ -27,10 +27,15 @@ const ResultPage = () => {
     }, [router]);
 
     const handleDownload = async () => {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.href = url;
+        link.href = blobUrl;
         link.download = `converted.${format}`;
         link.click();
+
+        URL.revokeObjectURL(blobUrl);
     }
 
     const handleReConvert = () => {
