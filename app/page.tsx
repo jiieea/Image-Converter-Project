@@ -5,7 +5,7 @@ import {convertImage, convertPdf} from "@/lib/api";
 import {Button} from "@/components/ui/button";
 import Navbar from "@/components/ui/navbar";
 import {toast} from "sonner";
-
+import DropZone from "@/components/DropZone";
 
 const FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
 export default function Home() {
@@ -17,6 +17,7 @@ export default function Home() {
     const [mode, setMode] = React.useState<'merge' | 'single'>('single')
     const inputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
+
     const handleDrop = (event: React.DragEvent) => {
         event.preventDefault();
         setIsDragging(false);
@@ -41,7 +42,6 @@ export default function Home() {
 
     const getFormat = (format: string) => {
         setFormat(format);
-        console.log(format);
     }
 
     const handleConvert = async () => {
@@ -118,42 +118,14 @@ export default function Home() {
                 </div>
 
                 {/* Dropzone */}
-                <div
-                    onDrop={handleDrop}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsDragging(true)
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onClick={() => inputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-4
-            ${isDragging
-                        ? 'border-zinc-400 bg-zinc-50'
-                        : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
-                    }`}
-                >
-                    <input
-                        ref={inputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple={mode === 'merge'} // ← allow multiple in merge mode
-                        className="hidden"
-                        onChange={handleFileChange}
-                    />
-                    <p className="text-3xl mb-3">↑</p>
-                    <p className="font-medium text-zinc-900 text-sm">
-                        {mode === 'merge'
-                            ? 'Drop multiple images here'
-                            : 'Drop your image here'
-                        }
-                    </p>
-                    <p className="text-xs text-zinc-400 mt-1">
-                        {mode === 'merge'
-                            ? 'JPG, PNG, WebP supported — any mix'
-                            : 'or click to browse — up to 50MB'
-                        }
-                    </p>
-                </div>
+                <DropZone
+                mode={mode}
+                handleDrop={handleDrop}
+                inputRef={inputRef}
+                handleFileChange={handleFileChange}
+                isDragging={isDragging}
+                setIsDragging={setIsDragging}
+                />
 
                 {/* File list for merge mode */}
                 {mode === 'merge' && files.length > 0 && (
@@ -212,7 +184,7 @@ export default function Home() {
                             {FORMATS.map((f) => (
                                 <button
                                     key={f}
-                                    onClick={() => setFormat(f)}
+                                    onClick={() => getFormat(f)}
                                     className={`px-4 py-2 rounded-lg text-sm border transition-colors
                     ${format === f
                                         ? 'border-blue-300 bg-blue-50 text-blue-800'
