@@ -45,5 +45,6 @@ export const convertPdf = async (files: File[]): Promise<string> => {
         if (err instanceof Error) {
             throw err.message;
         }
+        return 'An unknown error occurred during PDF conversion.';
     }
 }
