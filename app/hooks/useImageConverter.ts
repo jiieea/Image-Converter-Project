@@ -3,9 +3,12 @@ import {useRouter} from "next/navigation";
 import {convertImage, convertPdf} from "@/lib/api";
 import {toast} from "sonner";
 
-export type ConvertMode = "merge" | 'single';
+export type ConvertMode = "single" | 'merge';
 const IMAGE_MIME_PREFIX = "image/";
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif|bmp|jpg|pdf)$/i;
 
+const isImageFile = (file: File) =>
+    file.type.startsWith(IMAGE_MIME_PREFIX) || IMAGE_EXTENSIONS.test(file.name);
 export function useImageConverter() {
     const [files, setFiles] = React.useState<File[]>([]);
     const [format, setFormat] = React.useState("png");
@@ -17,11 +20,9 @@ export function useImageConverter() {
     const router = useRouter();
 
 
-    const applySelection = (selection: File[]) => {
-        const images = selection.filter((file => {
-            file.type.startsWith(IMAGE_MIME_PREFIX);
-        }));
-        setFiles(mode === 'single' ? images.slice(0, 1) : images)
+    const applySelection = (selected: File[]) => {
+        const images = selected.filter(isImageFile);
+        setFiles(mode === "single" ? images.slice(0, 1) : images);
     }
 
 

@@ -11,7 +11,7 @@ export interface DropZoneProps {
 
 export interface FileListProps {
     mode : ConvertMode;
-    onRemove: () => void;
+    onRemove: (index : number) => void;
     files: File[];
 }
 
