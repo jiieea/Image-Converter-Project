@@ -1,77 +1,24 @@
 "use client"
-import React, {useRef} from "react";
-import {useRouter} from "next/navigation";
-import {convertImage, convertPdf} from "@/lib/api";
+import React from "react";
 import {Button} from "@/components/ui/button";
 import Navbar from "@/components/ui/navbar";
-import {toast} from "sonner";
 import DropZone from "@/components/DropZone";
+import {useImageConverter} from "@/app/hooks/useImageConverter";
+import {ModeToggle} from "@/components/ModeToggle";
+
 
 const FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
 export default function Home() {
-    const [files, setFiles] = React.useState<File[]>([]);
-    const [format, setFormat] = React.useState("png");
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState("");
-    const [isDragging, setIsDragging] = React.useState(false);
-    const [mode, setMode] = React.useState<'merge' | 'single'>('single')
-    const inputRef = useRef<HTMLInputElement>(null);
-    const router = useRouter();
-
-    const handleDrop = (event: React.DragEvent) => {
-        event.preventDefault();
-        setIsDragging(false);
-        const dropped = Array.from(event.dataTransfer.files).filter((file) => {
-            file.type.startsWith("image/");
-        });
-        if (mode === 'single') {
-            setFiles(dropped.slice(0, 1))
-        } else {
-            setFiles(dropped)
-        }
-    }
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selected = Array.from(event.target.files || []);
-        if (mode === 'single') {
-            setFiles(selected.slice(0, 1))
-        } else {
-            setFiles(selected)
-        }
-    }
+    const {
+        files, format, mode, loading, error, isDragging, inputRef,
+        setFormat, setIsDragging, switchMode, handleDrop, handleFileChange,
+        removeFile, handleConvert, canConvert,
+    } = useImageConverter();
 
     const getFormat = (format: string) => {
         setFormat(format);
     }
 
-    const handleConvert = async () => {
-        if (!files) return;
-        setError('')
-        setLoading(true);
-        try {
-            let url: string;
-
-            if (mode === 'merge') {
-                url = await convertPdf(files)
-            } else {
-                url = await convertImage(files[0], format)
-            }
-            sessionStorage.setItem('convertedUrl', url);
-            sessionStorage.setItem('convertedFormat', mode === 'merge' ? 'pdf' : format);
-            sessionStorage.setItem('originalName', files[0].name);
-            router.push('/result');
-            toast.success('Successfully converted!');
-        } catch (err: any) {
-            setError(err.message);
-            toast.error(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const removeFile = (index: number) => {
-        setFiles(files.filter((x, i) => i !== index))
-    }
 
     return (
         <main className="min-h-screen bg-white">
@@ -88,43 +35,15 @@ export default function Home() {
                 </div>
 
                 {/* Mode toggle */}
-                <div className="flex gap-2 mb-6 p-1 bg-zinc-100 rounded-lg">
-                    <button
-                        onClick={() => {
-                            setMode('single');
-                            setFiles([])
-                        }}
-                        className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors
-              ${mode === 'single'
-                            ? 'bg-white text-zinc-900 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-700'
-                        }`}
-                    >
-                        Single image
-                    </button>
-                    <button
-                        onClick={() => {
-                            setMode('merge');
-                            setFiles([])
-                        }}
-                        className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors
-              ${mode === 'merge'
-                            ? 'bg-white text-zinc-900 shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-700'
-                        }`}
-                    >
-                        Merge to PDF
-                    </button>
-                </div>
-
+                <ModeToggle mode={mode} onChange={switchMode}/>
                 {/* Dropzone */}
                 <DropZone
-                mode={mode}
-                handleDrop={handleDrop}
-                inputRef={inputRef}
-                handleFileChange={handleFileChange}
-                isDragging={isDragging}
-                setIsDragging={setIsDragging}
+                    mode={mode}
+                    handleDrop={handleDrop}
+                    inputRef={inputRef}
+                    handleFileChange={handleFileChange}
+                    isDragging={isDragging}
+                    setIsDragging={setIsDragging}
                 />
 
                 {/* File list for merge mode */}
@@ -204,7 +123,7 @@ export default function Home() {
 
                 <Button
                     className="w-full"
-                    disabled={files.length === 0 || loading || (mode === 'merge' && files.length < 2)}
+                    disabled={!canConvert}
                     onClick={handleConvert}
                 >
                     {loading
