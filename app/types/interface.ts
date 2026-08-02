@@ -7,11 +7,12 @@ export interface DropZoneProps {
     isDragging: boolean;
     mode: string;
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleMultiFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export interface FileListProps {
     mode : ConvertMode;
-    onRemove: () => void;
+    onRemove: (index : number) => void;
     files: File[];
 }
 

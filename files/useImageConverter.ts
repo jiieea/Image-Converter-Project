@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { convertImage, convertPdf } from "@/lib/api";
 import { toast } from "sonner";
 
-export type ConvertMode = "merge" | "single";
+export type ConvertMode = "merge" | "single" | "compress";
 
 const IMAGE_MIME_PREFIX = "image/";
 
