@@ -9,6 +9,7 @@ const DropZone: React.FC<DropZoneProps> = (
         handleFileChange,
         mode,
         isDragging,
+        handleMultiFileChange,
     }
 ) => {
     return (
@@ -32,13 +33,13 @@ const DropZone: React.FC<DropZoneProps> = (
                 accept="image/*"
                 multiple={mode === 'merge'}
                 className="hidden"
-                onChange={handleFileChange}
+                onChange={mode === 'single' ? handleFileChange : handleMultiFileChange}
             />
             <p className="text-3xl mb-3">↑</p>
             <p className="font-medium text-zinc-900 text-sm">
-                {mode === 'merge'
-                    ? 'Drop multiple images here'
-                    : 'Drop your image here'
+                {mode === 'single' || mode === 'compress'
+                    ? 'Drop your image here'
+                    : 'Drop multiple files here'
                 }
             </p>
             <p className="text-xs text-zinc-400 mt-1">

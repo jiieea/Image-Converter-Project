@@ -12,7 +12,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = (
             <button
                 onClick={() => onChange('single')}
                 className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors
-              ${mode === 'single'
+              ${mode === 'single' 
                     ? 'bg-white text-zinc-900 shadow-sm'
                     : 'text-zinc-500 hover:text-zinc-700'
                 }`}
@@ -28,6 +28,16 @@ export const ModeToggle: React.FC<ModeToggleProps> = (
                 }`}
             >
                 Merge to PDF
+            </button>
+            <button
+                onClick={() => onChange('compress')}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors
+              ${mode === 'compress'
+                    ? 'bg-white text-zinc-900 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-700'
+                }`}
+            >
+                Compress Image
             </button>
         </div>
 

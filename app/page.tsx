@@ -7,21 +7,14 @@ import {useImageConverter} from "@/app/hooks/useImageConverter";
 import {ModeToggle} from "@/components/ModeToggle";
 import FilesList from "@/components/FilesList";
 import {FormatList} from "@/components/FormatList";
-import {toast} from "sonner";
 
 
 export default function Home() {
     const {
         files, format, mode, loading, error, isDragging, inputRef,
-        setFormat, setIsDragging, switchMode, handleDrop, handleFileChange,
-        removeFile, handleConvert, canConvert,
+        setIsDragging, switchMode, handleDrop, handleFileChange,
+        removeFile, canConvert, handleMultiFileChange, getFormat,handleImage
     } = useImageConverter();
-
-    const getFormat = (format: string) => {
-        setFormat(format);
-    }
-
-
     return (
         <main className="min-h-screen bg-white">
             <Navbar/>
@@ -45,6 +38,7 @@ export default function Home() {
                     handleFileChange={handleFileChange}
                     isDragging={isDragging}
                     setIsDragging={setIsDragging}
+                    handleMultiFileChange={handleMultiFileChange}
                 />
 
                 <FilesList mode={mode} onRemove={removeFile} files={files}/>
@@ -61,13 +55,15 @@ export default function Home() {
                 <Button
                     className="w-full"
                     disabled={!canConvert}
-                    onClick={handleConvert}
+                    onClick={
+                        handleImage
+                    }
                 >
                     {loading
                         ? 'Converting...'
                         : mode === 'merge'
                             ? `Merge ${files.length} images to PDF`
-                            : 'Convert image'
+                            : mode === 'single' ? 'Convert Image' : 'Compress Image'
                     }
                 </Button>
 
