@@ -1,6 +1,6 @@
 import React, {useRef} from "react";
 import {useRouter} from "next/navigation";
-import {compressionImage, convertImage, convertPdf} from "@/lib/api";
+import {compressionImage, compressionMultiFiles, convertImage, convertPdf} from "@/lib/api";
 import {toast} from "sonner";
 
 export type ConvertMode = "single" | 'merge' | 'compress';
@@ -69,10 +69,18 @@ export function useImageConverter() {
         setError('')
         setLoading(true);
         try {
-            const url = mode === 'merge' ?
-                await convertPdf(files) : mode === 'single' ? await convertImage(files[0], format) : await compressionImage(files[0]);
+            let url: string;
+            if (mode === 'merge') {
+                 url = await convertPdf(files);
+            } else if (mode === 'single') {
+                url = await convertImage(files[0], format);
+            } else if (mode === 'compress' && files.length > 1) {
+                url = await compressionMultiFiles(files)
+            }else {
+                url = await compressionImage(files);
+            }
             sessionStorage.setItem('url', url);
-            sessionStorage.setItem('convertedFormat', mode === 'merge' ? 'pdf' : format);
+            sessionStorage.setItem('convertedFormat', mode === 'merge' ? 'pdf' : format || 'png');
             sessionStorage.setItem('originalName', files[0].name);
             router.push('/result');
             toast.success(mode !== 'compress' ? 'Convert Image Successfully' : 'Compressing image successfully');

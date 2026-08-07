@@ -1,8 +1,8 @@
 "use client"
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { convertImage, convertPdf } from "@/lib/api";
-import { toast } from "sonner";
+import {useRef, useState} from "react";
+import {useRouter} from "next/navigation";
+import {compressionImage, compressionMultiFiles, convertImage, convertPdf} from "@/lib/api";
+import {toast} from "sonner";
 
 export type ConvertMode = "merge" | "single" | "compress";
 
@@ -50,7 +50,7 @@ export function useImageConverter() {
         try {
             const url = mode === "merge"
                 ? await convertPdf(files)
-                : await convertImage(files[0], format);
+                : mode === 'compress' ? await compressionImage(files) : await convertImage(files[0], format)
 
             sessionStorage.setItem("convertedUrl", url);
             sessionStorage.setItem("convertedFormat", mode === "merge" ? "pdf" : format);

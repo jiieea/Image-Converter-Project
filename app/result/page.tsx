@@ -39,7 +39,6 @@ const ResultPage = () => {
 
         URL.revokeObjectURL(blobUrl);
     }
-
     const handleReConvert = () => {
         sessionStorage.clear();
         router.push("/");

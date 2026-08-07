@@ -31,7 +31,7 @@ const DropZone: React.FC<DropZoneProps> = (
                 ref={inputRef}
                 type="file"
                 accept="image/*"
-                multiple={mode === 'merge'}
+                multiple={mode === 'merge' || mode === 'compress'}
                 className="hidden"
                 onChange={mode === 'single' ? handleFileChange : handleMultiFileChange}
             />

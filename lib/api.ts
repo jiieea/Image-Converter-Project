@@ -1,3 +1,17 @@
+
+
+const POST = async  (formData: FormData) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/compression` , {
+        method: 'POST',
+        body: formData
+    });
+    if(!response.ok) {
+        const json = await response.json();
+        throw new Error(json.message);
+    }
+    const data = await response.json();
+    return data.fileUrl;
+}
 export const convertImage = async (file: File, format: string): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -20,22 +34,40 @@ export const convertImage = async (file: File, format: string): Promise<string> 
     }
 }
 
-export const compressionImage = async (file: File): Promise<string> => {
+export const compressionImage = async (files: File[]): Promise<string> => {
     const formData = new FormData();
-    formData.append('image', file);
+    if (files.length > 1) {
+        files.forEach((file: File) => formData.append('images', file));
+    } else {
+        formData.append('image', files[0]);
+    }
+    try {
+       return POST(formData);
+    } catch (e: unknown) {
+        if (e instanceof Error) {
+            throw new Error('Compression failed =' + e.message);
+        }
+        throw e;
+    }
+}
+
+export const compressionMultiFiles = async (files: File[]): Promise<string> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+        formData.append('images', file);
+    });
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/compression`, {
-                method: 'POST',
-                body: formData,
-            }
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/compression/multi-file`, {
+            method: 'POST',
+            body: formData,
+        });
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(`Conversion failed: ${error.message}`);
+            throw new Error(`Fetch failed: ${error.message}`);
         }
         const data = await response.json();
-        return data.fileUrl;
+        return data.fileUrl; // zip url
     } catch (e: unknown) {
         if (e instanceof Error) {
             throw new Error('Compression failed' + e.message);
