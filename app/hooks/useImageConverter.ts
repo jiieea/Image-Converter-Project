@@ -23,7 +23,7 @@ export function useImageConverter() {
 
     const applySelection = (selected: File[]) => {
         const images = selected.filter(isImageFile);
-        setFiles(mode === "single" || mode === 'compress' ? images.slice(0, 1) : images);
+        setFiles(mode === "single" ? images.slice(0, 1) : images);
     }
 
 
@@ -69,10 +69,25 @@ export function useImageConverter() {
         setError('')
         setLoading(true);
         try {
-            const url = mode === 'merge' ?
-                await convertPdf(files) : mode === 'single' ? await convertImage(files[0], format) : await compressionImage(files[0]);
+            let url: string;
+            if (mode === 'merge') {
+                url = await convertPdf(files);
+            } else if (mode === 'single') {
+                url = await convertImage(files[0], format);
+            } else {
+                url = await compressionImage(files);
+            }
             sessionStorage.setItem('url', url);
-            sessionStorage.setItem('convertedFormat', mode === 'merge' ? 'pdf' : format);
+            switch (mode) {
+                case "merge":
+                    sessionStorage.setItem('resultFormat', 'pdf');
+                    break;
+                case "compress" :
+                    sessionStorage.setItem('resultFormat', files.length > 1 ? 'zip' : 'png')
+                    break;
+                default:
+                    sessionStorage.setItem('resultFormat', format);
+            }
             sessionStorage.setItem('originalName', files[0].name);
             router.push('/result');
             toast.success(mode !== 'compress' ? 'Convert Image Successfully' : 'Compressing image successfully');
