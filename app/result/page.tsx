@@ -5,7 +5,6 @@ import {useRouter} from "next/navigation";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {useImageConverter} from "@/app/hooks/useImageConverter";
-import {toast} from "sonner";
 
 
 const ResultPage = () => {
