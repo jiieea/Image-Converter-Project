@@ -5,6 +5,7 @@ import {useRouter} from "next/navigation";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {useImageConverter} from "@/app/hooks/useImageConverter";
+import {toast} from "sonner";
 
 
 const ResultPage = () => {
@@ -17,14 +18,14 @@ const ResultPage = () => {
 
     useEffect(() => {
         const savedUrl = sessionStorage.getItem("url");
-        const savedFormat = sessionStorage.getItem("convertedFormat");
+        const savedFormat = sessionStorage.getItem("resultFormat");
         const originalItem = sessionStorage.getItem("originalName");
         if (!savedUrl) {
             router.push("/");
             return;
         }
         setUrl(savedUrl);
-        setFormat(savedFormat || "png");
+        setFormat(savedFormat || "zip");
         setOriginalName(originalItem || "");
     }, [router]);
 
@@ -34,7 +35,7 @@ const ResultPage = () => {
         const blobUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = blobUrl;
-        link.download = `converted.${format}`;
+        link.download = `file.${format ? format : "zip" }`;
         link.click();
 
         URL.revokeObjectURL(blobUrl);
