@@ -7,7 +7,7 @@ import {useImageConverter} from "@/app/hooks/useImageConverter";
 import {ModeToggle} from "@/components/ModeToggle";
 import FilesList from "@/components/FilesList";
 import {FormatList} from "@/components/FormatList";
-
+import {AuthModal} from "@/components/AuthModal";
 
 export default function Home() {
     const {
@@ -18,6 +18,7 @@ export default function Home() {
     return (
         <main className="min-h-screen bg-white">
             <Navbar/>
+            <AuthModal/>
             <div className="max-w-lg mx-auto px-6 py-16">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-medium text-zinc-900 mb-2">
