@@ -1,6 +1,23 @@
-const POSTIMAGES = async (formData: FormData) => {
+import {useAuthStore} from '@/app/hooks/useAuthStore'; // adjust path to match your project
+
+interface authPayload {
+    email: string,
+    password: string,
+}
+
+// Builds an Authorization header only when a token exists — guests still
+// hit these endpoints fine, they just won't get the auth-guard's unlimited pass.
+// Uses getState() (not the hook) because these are plain functions, not
+// components — see api-client.ts discussion for why that distinction matters.
+const authHeader = (): HeadersInit => {
+    const token = useAuthStore.getState().token;
+    return token ? {authorization: `Bearer ${token}`} : {};
+};
+
+const COMPRESS_FILES = async (formData: FormData) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/compression/multi-file`, {
         method: 'POST',
+        headers: authHeader(),
         body: formData,
     });
     if (!response.ok) {
@@ -14,6 +31,7 @@ const POSTIMAGES = async (formData: FormData) => {
 const CONVERT_IMAGE = async (formData: FormData, format: string) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/convert?format=${format}`, {
         method: 'POST',
+        headers: authHeader(),
         body: formData,
     });
     if (!response.ok) {
@@ -27,6 +45,7 @@ const CONVERT_IMAGE = async (formData: FormData, format: string) => {
 const CONVERT_PDF = async (formData: FormData) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/convert/pdf`, {
         method: 'POST',
+        headers: authHeader(),
         body: formData,
     });
     if (!response.ok) {
@@ -36,9 +55,10 @@ const CONVERT_PDF = async (formData: FormData) => {
     const data = await response.json();
     return data.url;
 }
-const POST = async (formData: FormData) => {
+const COMPRESS = async (formData: FormData) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/compression`, {
         method: 'POST',
+        headers: authHeader(),
         body: formData
     });
     if (!response.ok) {
@@ -78,16 +98,14 @@ export const compressionImage = async (files: File[]): Promise<string> => {
     } else {
         formData.append('image', files[0]);
     }
-    console.log('formData images count:', formData.getAll('images').length);
     try {
-        let result: string;
-        if (files.length > 1) {
-            result = await POSTIMAGES(formData)
-        } else {
-            result = await POST(formData);
-        }
+        let url: string;
+        files.length > 1 ?
+            url = await COMPRESS_FILES(formData)
+            :
+            url = await COMPRESS(formData);
 
-        return result;
+        return url;
     } catch (e: unknown) {
         if (e instanceof Error) {
             throw new Error('Compression failed =' + e.message);
@@ -96,3 +114,51 @@ export const compressionImage = async (files: File[]): Promise<string> => {
     }
 }
 
+
+export const signUpRequest = async (payload: authPayload): Promise<any> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/create`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message ? data.message : data.error);
+    }
+    return response.json();
+}
+
+
+export const signInRequest = async (payload: authPayload): Promise<any> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+        const res = await response.json();
+        throw new Error(res.message ? res.message : res.error);
+    }
+    return response.json();
+}
+
+
+export const logoutReq = async (token: string) => {
+    const data = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${token}`,
+        }
+    });
+    if (!data.ok) {
+        const res = await data.json();
+        throw new Error(res.message ? res.message : res.error);
+    }
+    const res = await data.json();
+    return res;
+}

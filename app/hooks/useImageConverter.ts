@@ -20,13 +20,10 @@ export function useImageConverter() {
     const inputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
 
-
     const applySelection = (selected: File[]) => {
         const images = selected.filter(isImageFile);
         setFiles(mode === "single" ? images.slice(0, 1) : images);
     }
-
-
     const handleDrop = (event: React.DragEvent) => {
         event.preventDefault();
         setIsDragging(false);
@@ -61,7 +58,6 @@ export function useImageConverter() {
     const getFormat = (format: string) => {
         setFormat(format);
     }
-
 
     const canConvert = files.length > 0 && !loading && !(mode === 'merge' && files.length < 2);
     const fileUrl = async () => {
