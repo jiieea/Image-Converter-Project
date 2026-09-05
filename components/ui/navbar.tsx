@@ -9,7 +9,6 @@ const Navbar = () => {
     const token = useAuthStore((s) => s.token);
     const logout = useAuthStore((s) => s.logout);
     const hasHydrated = useAuthStore((s) => s.hasHydrated);
-    console.log(hasHydrated);
     const handleLogout = async () => {
         try {
             await logoutReq(token!)

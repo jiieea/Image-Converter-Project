@@ -34,8 +34,8 @@ export const useAuthStore = create<AuthStoreState>()(
             closeModal: () => set({isModalOpen: false}),
 
             setHasHydrated: (hasHydrated: boolean) => set({hasHydrated}),
-            setMode: (mode) => set({mode}),
-            login: (token) => set({isModalOpen: false, token}),
+            setMode: (mode: AuthMode) => set({mode}),
+            login: (token: string) => set({isModalOpen: false, token}),
             logout: () => set({token: null}),
 
         }),

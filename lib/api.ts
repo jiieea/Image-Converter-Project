@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/app/hooks/useAuthStore'; // adjust path to match your project
+import {useAuthStore} from '@/app/hooks/useAuthStore'; // adjust path to match your project
 
 interface authPayload {
     email: string,
@@ -11,7 +11,7 @@ interface authPayload {
 // components — see api-client.ts discussion for why that distinction matters.
 const authHeader = (): HeadersInit => {
     const token = useAuthStore.getState().token;
-    return token ? { authorization: `Bearer ${token}` } : {};
+    return token ? {authorization: `Bearer ${token}`} : {};
 };
 
 const COMPRESS_FILES = async (formData: FormData) => {
@@ -98,7 +98,6 @@ export const compressionImage = async (files: File[]): Promise<string> => {
     } else {
         formData.append('image', files[0]);
     }
-    console.log('formData images count:', formData.getAll('images').length);
     try {
         let url: string;
         files.length > 1 ?
@@ -126,7 +125,7 @@ export const signUpRequest = async (payload: authPayload): Promise<any> => {
     });
     if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message);
+        throw new Error(data.message ? data.message : data.error);
     }
     return response.json();
 }
@@ -141,8 +140,8 @@ export const signInRequest = async (payload: authPayload): Promise<any> => {
         body: JSON.stringify(payload)
     });
     if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error);
+        const res = await response.json();
+        throw new Error(res.message ? res.message : res.error);
     }
     return response.json();
 }
@@ -158,7 +157,7 @@ export const logoutReq = async (token: string) => {
     });
     if (!data.ok) {
         const res = await data.json();
-        throw new Error(res.message);
+        throw new Error(res.message ? res.message : res.error);
     }
     const res = await data.json();
     return res;

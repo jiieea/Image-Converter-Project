@@ -67,6 +67,7 @@ export const AuthModal = () => {
 
             const receivedToken = data.user?.token;
             if(receivedToken) {
+                toast.success('Logged in successfully');
                 login(receivedToken);
             }else if(isSignup) {
                 setMode('signIn');
